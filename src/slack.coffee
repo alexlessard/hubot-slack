@@ -220,7 +220,6 @@ send_old: (envelope, messages...) ->
     
     data =  envelope
     # Required arguments
-    data.token = process.env.HUBOT_SLACK_TOKEN
     data.channel = @client.getChannelGroupOrDMByName envelope.room
     data.text = msg.text
     # Optional arguments
