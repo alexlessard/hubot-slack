@@ -171,7 +171,7 @@ class SlackBot extends Adapter
         link
     txt
 
-  send: (envelope, messages...) ->
+send_old: (envelope, messages...) ->
     channel = @client.getChannelGroupOrDMByName envelope.room
 
     for msg in messages
@@ -211,6 +211,26 @@ class SlackBot extends Adapter
             msg = msg.substring(breakIndex, msg.length)
 
         channel.send m for m in submessages
+
+  send: (envelope, msg) ->
+    # Modified send mthod that uses the Slack chat.postMessage API call
+    # Requires msg to be object which minimally has a text attribute
+    @robot.logger.info "Slack-client processing message to send"
+    channel = @client.getChannelGroupOrDMByName envelope.room
+    
+    data =  envelope
+    # Required arguments
+    data.token = process.env.HUBOT_SLACK_TOKEN
+    data.channel = @client.getChannelGroupOrDMByName envelope.room
+    data.text = msg.text
+    # Optional arguments
+    data.username = if envelope.user.name then envelope.user.name else @robot.name
+    data.attachments = msg.attachments if msg.attachments
+    data.icon_emoji = envelope.emoji if envelope.emoji
+
+    @robot.logger.info "Slack-client post message to: #{data.channel}"
+    channel.postMessage data
+
 
   reply: (envelope, messages...) ->
     @robot.logger.debug "Sending reply"
