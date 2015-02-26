@@ -1,6 +1,6 @@
 {
   "name": "hubot-slack",
-  "version": "3.2.1",
+  "version": "3.2.1.custom-elarochelle",
   "author": {
     "name": "Tiny Speck",
     "url": "https://www.tinyspeck.com/"
@@ -43,7 +43,7 @@
   ],
   "repository": {
     "type": "git",
-    "url": "http://github.com/slackhq/hubot-slack.git"
+    "url": "http://github.com/ethanlarochelle/hubot-slack.git"
   },
   "bugs": {
     "url": "https://github.com/slackhq/hubot-slack/issues",
@@ -67,6 +67,6 @@
     "test": "mocha --compilers coffee:coffee-script/register --reporter spec"
   },
   "dependencies": {
-    "slack-client": "~1.2.0"
+    "slack-client": "1.3.1"
   }
 }
