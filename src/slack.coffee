@@ -171,7 +171,7 @@ class SlackBot extends Adapter
         link
     txt
 
-send: (envelope, messages...) ->
+  send: (envelope, messages...) ->
     @robot.logger.info "SEND format #{envelope.format}"
     if envelope.format is true
       @robot.logger.info "FORMAT messages: #{messages}"
