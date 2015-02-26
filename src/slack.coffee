@@ -171,62 +171,68 @@ class SlackBot extends Adapter
         link
     txt
 
-send_old: (envelope, messages...) ->
-    channel = @client.getChannelGroupOrDMByName envelope.room
+send: (envelope, messages...) ->
+    @robot.logger.info "SEND format #{envelope.format}"
+    if envelope.format is true
+      @robot.logger.info "FORMAT messages: #{messages}"
+      for msg in messages
+         @postMessage envelope, msg
+    else
+      @robot.logger.info "Slack recieved  #{envelope.room}: #{messages}"
+      channel = @client.getChannelGroupOrDMByName envelope.room
+      @robot.logger.info "Slack channel  #{channel.name}"
 
-    for msg in messages
-      @robot.logger.debug "Sending to #{envelope.room}: #{msg}"
+      messages = [ messages ] if typeof messages is 'string'
+      @robot.logger.info "Messages now: #{messages}"
+      for msg in messages
+        @robot.logger.debug "Sending to #{envelope.room}: #{msg}"
 
-      if msg.length <= SlackBot.MAX_MESSAGE_LENGTH
-        channel.send msg
+        @robot.logger.info "Slack Message length  #{msg.length}"
+        @robot.logger.info "SlackMax: #{SlackBot.MAX_MESSAGE_LENGTH}"
+        if msg.length <= SlackBot.MAX_MESSAGE_LENGTH
+          channel.send msg
 
-      # If message is greater than MAX_MESSAGE_LENGTH, split it into multiple messages
-      else
-        submessages = []
+        # If message is greater than MAX_MESSAGE_LENGTH, split it into multiple messages
+        else
+          submessages = []
 
-        while msg.length > 0
-          if msg.length <= SlackBot.MAX_MESSAGE_LENGTH
-            submessages.push msg
-            msg = ''
+          while msg.length > 0
+            if msg.length <= SlackBot.MAX_MESSAGE_LENGTH
+              submessages.push msg
+              msg = ''
 
-          else
-            # Split message at last line break, if it exists
-            maxSizeChunk = msg.substring(0, SlackBot.MAX_MESSAGE_LENGTH)
-
-            lastLineBreak = maxSizeChunk.lastIndexOf('\n')
-            lastWordBreak = maxSizeChunk.match(/\W\w+$/)?.index
-
-            breakIndex = if lastLineBreak > -1
-              lastLineBreak
-            else if lastWordBreak
-              lastWordBreak
             else
-              SlackBot.MAX_MESSAGE_LENGTH
+              # Split message at last line break, if it exists
+              maxSizeChunk = msg.substring(0, SlackBot.MAX_MESSAGE_LENGTH)
 
-            submessages.push msg.substring(0, breakIndex)
+              lastLineBreak = maxSizeChunk.lastIndexOf('\n')
+              lastWordBreak = maxSizeChunk.match(/\W\w+$/)?.index
 
-            # Skip char if split on line or word break
-            breakIndex++ if breakIndex isnt SlackBot.MAX_MESSAGE_LENGTH
+              breakIndex = if lastLineBreak > -1
+                lastLineBreak
+              else if lastWordBreak
+                lastWordBreak
+              else
+                SlackBot.MAX_MESSAGE_LENGTH
 
-            msg = msg.substring(breakIndex, msg.length)
+              submessages.push msg.substring(0, breakIndex)
 
-        channel.send m for m in submessages
+              # Skip char if split on line or word break
+              breakIndex++ if breakIndex isnt SlackBot.MAX_MESSAGE_LENGTH
 
-  send: (envelope, msg) ->
-    # Modified send mthod that uses the Slack chat.postMessage API call
-    # Requires msg to be object which minimally has a text attribute
-    @robot.logger.info "Slack-client processing message to send"
+              msg = msg.substring(breakIndex, msg.length)
+
+          channel.send m for m in submessages
+
+  postMessage: (envelope, msg) ->
     channel = @client.getChannelGroupOrDMByName envelope.room
-    
-    data =  envelope
-    # Required arguments
+    @robot.logger.info "Post Message"
+    data = envelope
+    data.username = if envelope.user.name then envelope.user.name else @robot.name
     data.channel = @client.getChannelGroupOrDMByName envelope.room
     data.text = msg.text
-    # Optional arguments
-    data.username = if envelope.user.name then envelope.user.name else @robot.name
     data.attachments = msg.attachments if msg.attachments
     data.icon_emoji = envelope.emoji if envelope.emoji
-
     @robot.logger.info "Slack-client post message to: #{data.channel}"
     channel.postMessage data
 
