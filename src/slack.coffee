@@ -172,23 +172,15 @@ class SlackBot extends Adapter
     txt
 
   send: (envelope, messages...) ->
-    @robot.logger.info "SEND format #{envelope.format}"
     if envelope.format is true
-      @robot.logger.info "FORMAT messages: #{messages}"
       for msg in messages
          @postMessage envelope, msg
     else
-      @robot.logger.info "Slack recieved  #{envelope.room}: #{messages}"
+
       channel = @client.getChannelGroupOrDMByName envelope.room
-      @robot.logger.info "Slack channel  #{channel.name}"
-
       messages = [ messages ] if typeof messages is 'string'
-      @robot.logger.info "Messages now: #{messages}"
+      @robot.logger.info "Sending message to #{channel.name}"
       for msg in messages
-        @robot.logger.debug "Sending to #{envelope.room}: #{msg}"
-
-        @robot.logger.info "Slack Message length  #{msg.length}"
-        @robot.logger.info "SlackMax: #{SlackBot.MAX_MESSAGE_LENGTH}"
         if msg.length <= SlackBot.MAX_MESSAGE_LENGTH
           channel.send msg
 
@@ -226,14 +218,14 @@ class SlackBot extends Adapter
 
   postMessage: (envelope, msg) ->
     channel = @client.getChannelGroupOrDMByName envelope.room
-    @robot.logger.info "Post Message"
+    @robot.logger.debug "Post Message Called"
     data = envelope
     data.username = if envelope.user.name then envelope.user.name else @robot.name
     data.channel = @client.getChannelGroupOrDMByName envelope.room
     data.text = msg.text
     data.attachments = msg.attachments if msg.attachments
     data.icon_emoji = envelope.emoji if envelope.emoji
-    @robot.logger.info "Slack-client post message to: #{data.channel}"
+    @robot.logger.info "Slack-client post message to: #{envelope.room}"
     channel.postMessage data
 
 
