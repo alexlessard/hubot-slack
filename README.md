@@ -1,4 +1,6 @@
 # hubot-slack
+This is a fork of [hubot-slack](https://github.com/slackhq/hubot-slack). It adds functionality to send formatted messages using the Slack API `chat.postMessage` command. The send command was not able to send messages to to Slack channels it was not currently in. Formatting using the send method did not appear to work either. Messages can still be sent using the send method, but an optional format flag can be provided in `envelope.flag`, which, if true, will use the new postMessage method.
+
 
 This is a [Hubot](http://hubot.github.com/) adapter to use with [Slack](https://slack.com).
 
